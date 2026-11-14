@@ -1,0 +1,21 @@
+# Android Studio / Gradle
+.gradle/
+build/
+local.properties
+keystore.properties
+*.jks
+*.keystore
+captures/
+.externalNativeBuild/
+.cxx/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Local release signing material must never be committed.
+release/
+
+deliverables/
+.kotlin/
+

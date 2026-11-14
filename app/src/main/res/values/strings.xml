@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CueFlow Teleprompter</string>
+    <string name="app_tagline">Calm, private, local teleprompter</string>
+
+    <string name="home_search_hint">Search scripts</string>
+    <string name="home_search_clear">Clear search</string>
+    <string name="home_empty_title">Your first cue is waiting</string>
+    <string name="home_empty_body">Write a script once. CueFlow keeps it on this device and scrolls it at your pace.</string>
+    <string name="home_no_results_title">No matching scripts</string>
+    <string name="home_no_results_body">Try a different word, or clear the search.</string>
+    <string name="home_new_script">New script</string>
+    <string name="home_import_word">Import Word</string>
+    <string name="home_settings">Settings</string>
+    <string name="home_local_badge">Fully offline · saved on this device</string>
+    <string name="home_stats">%1$s · %2$s</string>
+    <string name="home_hero_hint">Write once. Read at your pace, on any screen.</string>
+    <plurals name="script_count">
+        <item quantity="one">%d script</item>
+        <item quantity="other">%d scripts</item>
+    </plurals>
+    <plurals name="character_count">
+        <item quantity="one">%d character</item>
+        <item quantity="other">%d characters</item>
+    </plurals>
+    <plurals name="script_character_count">
+        <item quantity="one">%d char</item>
+        <item quantity="other">%d chars</item>
+    </plurals>
+    <string name="home_load_error">Scripts could not be loaded. Your original file was kept for recovery.</string>
+
+    <string name="script_untitled">Untitled script</string>
+    <string name="script_time_now">just now</string>
+    <string name="script_time_minutes">%1$d min ago</string>
+    <string name="script_time_hours">%1$d h ago</string>
+    <string name="script_time_days">%1$d d ago</string>
+    <string name="script_read_time">~%1$d min</string>
+
+    <string name="actions_more">More actions</string>
+    <string name="actions_edit">Edit</string>
+    <string name="actions_play_description">Start teleprompter: %1$s</string>
+    <string name="actions_duplicate">Duplicate</string>
+    <string name="actions_export">Export as text</string>
+    <string name="actions_delete">Delete</string>
+    <string name="action_back">Back</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_done">Done</string>
+
+    <string name="delete_title">Delete script?</string>
+    <string name="delete_body">“%1$s” will be removed from this device. This cannot be undone.</string>
+    <string name="delete_done">Script deleted</string>
+    <string name="duplicate_done">Script duplicated</string>
+
+    <string name="editor_new_title">New script</string>
+    <string name="editor_edit_title">Edit script</string>
+    <string name="editor_title_hint">Title</string>
+    <string name="editor_content_hint">Start typing your script…\n\nTip: leave a blank line between paragraphs for a natural reading rhythm.</string>
+    <string name="editor_save">Save script</string>
+    <string name="editor_saved">Saved</string>
+    <string name="editor_char_count">%1$d / %2$d</string>
+    <string name="editor_reading_time">~%1$d min at a comfortable pace</string>
+    <string name="editor_empty_hint">A blank script will not be saved.</string>
+
+    <string name="prompt_close">Close teleprompter</string>
+    <string name="prompt_play">Play</string>
+    <string name="prompt_pause">Pause</string>
+    <string name="prompt_restart">Restart</string>
+    <string name="prompt_mirror_horizontal">Mirror horizontally</string>
+    <string name="prompt_mirror_vertical">Mirror vertically</string>
+    <string name="prompt_speed">Speed</string>
+    <string name="prompt_decrease_font">Decrease text size</string>
+    <string name="prompt_increase_font">Increase text size</string>
+    <string name="prompt_speed_value">%1$d</string>
+    <string name="prompt_font_value">%1$d sp</string>
+    <string name="prompt_get_ready">Get ready</string>
+    <string name="prompt_finished">End of script</string>
+    <string name="prompt_progress">%1$d%%</string>
+
+    <string name="camera_open">Record video</string>
+    <string name="camera_close">Close camera</string>
+    <string name="camera_switch">Switch camera</string>
+    <string name="camera_drag">Drag camera window</string>
+    <string name="camera_hide_preview">Hide preview</string>
+    <string name="camera_show_preview">Show recording window</string>
+    <string name="camera_recording_indicator">Recording</string>
+    <string name="camera_preview">Camera preview</string>
+    <string name="camera_record_start">Start recording</string>
+    <string name="camera_record_stop">Stop recording</string>
+    <string name="camera_saved_title">Recording saved</string>
+    <string name="camera_saved_body">The video is saved on this device. You can share it now.</string>
+    <string name="camera_share">Share</string>
+    <string name="camera_done">Done</string>
+    <string name="camera_permission_title">Camera and microphone</string>
+    <string name="camera_permission_body">CueFlow records video locally while you read. Nothing is uploaded. Allow camera and microphone access to record.</string>
+    <string name="camera_permission_settings">Open settings</string>
+    <string name="camera_permission_cancel">Not now</string>
+    <string name="camera_failed">Recording failed. Please try again.</string>
+    <string name="camera_muted">No sound</string>
+    <string name="camera_no_camera">No camera is available on this device.</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="settings_dynamic_color">Dynamic color</string>
+    <string name="settings_dynamic_color_desc">Use the wallpaper palette on Android 12 and newer</string>
+    <string name="settings_playback">Teleprompter defaults</string>
+    <string name="settings_default_speed">Default speed</string>
+    <string name="settings_default_font">Default text size</string>
+    <string name="settings_countdown">Countdown before scrolling</string>
+    <string name="countdown_off">Off</string>
+    <string name="countdown_seconds">%1$d s</string>
+    <string name="settings_mirror_defaults">Mirror by default</string>
+    <string name="settings_mirror_horizontal">Horizontal</string>
+    <string name="settings_mirror_vertical">Vertical</string>
+    <string name="settings_keep_awake">Keep screen awake</string>
+    <string name="settings_keep_awake_desc">Prevents the display from sleeping while prompting</string>
+    <string name="settings_data">Your data</string>
+    <string name="settings_backup">Back up all scripts</string>
+    <string name="settings_backup_desc">Save a portable JSON file wherever you choose</string>
+    <string name="settings_restore">Restore from backup</string>
+    <string name="settings_restore_desc">Merge scripts from a CueFlow backup file</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_privacy">Private by design</string>
+    <string name="settings_privacy_desc">No account, no network permission, no analytics. Everything stays in this app’s private storage.</string>
+    <string name="settings_license">Open source · Apache License 2.0</string>
+    <string name="settings_reset">Reset settings</string>
+    <string name="settings_reset_title">Reset all settings?</string>
+    <string name="settings_reset_body">Your scripts will not be affected.</string>
+    <string name="settings_reset_done">Settings reset</string>
+
+    <plurals name="backup_success">
+        <item quantity="one">Backup saved (%d script)</item>
+        <item quantity="other">Backup saved (%d scripts)</item>
+    </plurals>
+    <string name="backup_failed">Could not save the backup</string>
+    <plurals name="restore_success">
+        <item quantity="one">Imported %d script</item>
+        <item quantity="other">Imported %d scripts</item>
+    </plurals>
+    <string name="restore_none">No new scripts found</string>
+    <string name="restore_failed">That file is not a valid CueFlow backup</string>
+    <string name="export_success">Text file saved</string>
+    <string name="export_failed">Could not export this script</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+
+    <string name="import_word_success">Imported “%1$s”</string>
+    <string name="import_word_truncated">Imported “%1$s” — content was truncated</string>
+    <string name="import_word_failed">Could not import. Choose a .docx file.</string>
+    <string name="import_word_no_text">No readable text found in this Word document.</string>
+    <string name="import_word_too_large">This Word file is too large.</string>
+    <string name="import_word_default_title">Imported Word document</string>
+
+    <string name="loading">Loading…</string>
+    <string name="copy_suffix"> (copy)</string>
+    <string name="sample_title">Welcome to CueFlow</string>
+    <string name="sample_content">Welcome to CueFlow.\n\nThis is your quiet, private teleprompter. Everything you write stays on this device — no account, no network, no distractions.\n\nTap play and the script scrolls at your pace. You can adjust speed and text size while you read. Tap the screen to bring the controls back.\n\nMirroring is built in for beam-splitter glass, and you can make it the default in Settings.\n\nWhen you are ready, delete this sample and write your own first line.\n\nGood luck. You have got this.</string>
+    <string name="cd_app_logo">CueFlow logo</string>
+</resources>
