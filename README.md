@@ -36,7 +36,11 @@ CueFlow 是一个完全离线的开源 Android 提词器。没有账号、没有
 
 ### 直接安装 APK
 
-构建好的安装包：
+**从 GitHub Releases 下载：**
+
+https://github.com/ToolsMaker292/CueFlow/releases/latest
+
+仓库内也保留了一份安装包：
 
 - `releases/CueFlow-1.0.0.apk`（正式签名，适合直接测试 / 分发）
 - `app/build/outputs/apk/debug/app-debug.apk`（调试签名，适合开发调试）
