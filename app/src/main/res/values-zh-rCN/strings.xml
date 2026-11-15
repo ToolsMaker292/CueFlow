@@ -80,6 +80,7 @@
     <string name="camera_drag">拖动相机窗口</string>
     <string name="camera_hide_preview">隐藏预览</string>
     <string name="camera_show_preview">显示录制窗口</string>
+    <string name="camera_show_preview_idle">显示预览</string>
     <string name="camera_recording_indicator">正在录制</string>
     <string name="camera_preview">相机预览</string>
     <string name="camera_record_start">开始录制</string>

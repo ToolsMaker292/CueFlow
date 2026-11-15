@@ -45,6 +45,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.FiberManualRecord
 import androidx.compose.material.icons.rounded.Flip
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -52,6 +53,7 @@ import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.TextFields
 import androidx.compose.material.icons.rounded.Videocam
+import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledIconToggleButton
@@ -156,13 +158,8 @@ fun PromptScreen(
     var savedVideoUri by remember { mutableStateOf<Uri?>(null) }
     var cameraPreviewHidden by rememberSaveable(script.id) { mutableStateOf(false) }
     var cameraRecording by remember { mutableStateOf(false) }
+    var cameraStartRequest by remember { mutableIntStateOf(0) }
     var cameraOffset by remember(script.id) { mutableStateOf<IntOffset?>(null) }
-
-    LaunchedEffect(cameraRecording, cameraPreviewHidden) {
-        if (cameraPreviewHidden && !cameraRecording) {
-            cameraPreviewHidden = false
-        }
-    }
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
@@ -171,6 +168,9 @@ fun PromptScreen(
         audioGranted = permissions[Manifest.permission.RECORD_AUDIO] == true
         if (cameraGranted) {
             cameraEnabled = true
+            cameraPreviewHidden = false
+            cameraRecording = false
+            cameraStartRequest = 0
             controlsVisible = true
         } else {
             showCameraPermissionDialog = true
@@ -188,6 +188,9 @@ fun PromptScreen(
                 Manifest.permission.RECORD_AUDIO,
             ) == PackageManager.PERMISSION_GRANTED
             cameraEnabled = true
+            cameraPreviewHidden = false
+            cameraRecording = false
+            cameraStartRequest = 0
             controlsVisible = true
         } else {
             cameraPermissionLauncher.launch(
@@ -468,38 +471,84 @@ fun PromptScreen(
                         )
                     },
                     onHide = { cameraPreviewHidden = true },
+                    startRequest = cameraStartRequest,
                     onClose = {
                         cameraEnabled = false
                         cameraPreviewHidden = false
                         cameraRecording = false
+                        cameraStartRequest = 0
                     },
                     onRecordingChanged = { cameraRecording = it },
                     onSaved = { uri -> savedVideoUri = uri },
                 )
 
-                if (cameraRecording && cameraPreviewHidden) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .statusBarsPadding()
-                            .padding(top = 8.dp, end = 12.dp)
-                            .size(40.dp)
-                            .clickable { cameraPreviewHidden = false }
-                            .semantics {
-                                contentDescription = buildString {
-                                    append(context.getString(R.string.camera_recording_indicator))
-                                    append(" · ")
-                                    append(context.getString(R.string.camera_show_preview))
-                                }
-                            },
-                        contentAlignment = Alignment.Center,
-                    ) {
+                if (cameraPreviewHidden) {
+                    if (cameraRecording) {
                         Box(
                             modifier = Modifier
-                                .size(12.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFE53935)),
-                        )
+                                .align(Alignment.TopEnd)
+                                .statusBarsPadding()
+                                .padding(top = 8.dp, end = 12.dp)
+                                .size(40.dp)
+                                .clickable { cameraPreviewHidden = false }
+                                .semantics {
+                                    contentDescription = buildString {
+                                        append(context.getString(R.string.camera_recording_indicator))
+                                        append(" · ")
+                                        append(context.getString(R.string.camera_show_preview))
+                                    }
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFE53935)),
+                            )
+                        }
+                    } else {
+                        Surface(
+                            color = Color.Black.copy(alpha = 0.62f),
+                            shape = CircleShape,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .statusBarsPadding()
+                                .padding(top = 8.dp, end = 12.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                            ) {
+                                IconButton(
+                                    onClick = { cameraPreviewHidden = false },
+                                    modifier = Modifier.size(36.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Rounded.Visibility,
+                                        contentDescription = stringResource(
+                                            R.string.camera_show_preview_idle,
+                                        ),
+                                        tint = Color.White,
+                                        modifier = Modifier.size(19.dp),
+                                    )
+                                }
+                                IconButton(
+                                    onClick = { cameraStartRequest += 1 },
+                                    modifier = Modifier.size(40.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Rounded.FiberManualRecord,
+                                        contentDescription = stringResource(
+                                            R.string.camera_record_start,
+                                        ),
+                                        tint = Color(0xFFE53935),
+                                        modifier = Modifier.size(28.dp),
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

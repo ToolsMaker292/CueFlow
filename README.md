@@ -9,7 +9,7 @@ CueFlow 是一个完全离线的开源 Android 提词器。没有账号、没有
 - **现代 Material 3 界面**：Android 12+ 动态取色、边到边显示、深色模式、26–36dp 大圆角、无障碍触控尺寸。
 - **流畅全屏提词**：逐帧滚动，速度 10–120 dp/s 实时可调；字号 24–64 sp；行高 1.5 倍；横向 / 纵向镜像；阅读辅助线；进度条。
 - **为拍摄而设计**：3 / 5 秒倒计时、屏幕常亮、沉浸式全屏、控制栏自动隐藏、轻触唤回。
-- **本地相机录制**：提词时打开前置/后置摄像头小窗，边看提词边录制带声音的 MP4；预览窗可拖动，录制时可一键隐藏预览，只保留顶部小红点提示，录制不中断。
+- **本地相机录制**：提词时打开前置/后置摄像头小窗，边看提词边录制带声音的 MP4；预览窗可拖动，未开始录制时也能隐藏，隐藏后仍可用红点按钮直接开始录制；录制中隐藏则只保留顶部小红点提示，录制不中断。
 - **导入 Word**：从系统文件选择器选择 `.docx`，在本地提取段落并生成一条新脚本；支持中文、英文、分段和换行。旧版 `.doc` 会提示先另存为 `.docx`。
 - **录制文件**：Android 10+ 直接保存到相册 `Movies/CueFlow`（不申请存储权限）；Android 7–9 保存到应用文件并可一键分享到相册/网盘/剪辑软件。
 - **本地脚本库**：新建、编辑、搜索、复制、删除；输入后 800ms 自动保存，按返回键也会保存。
@@ -28,6 +28,10 @@ CueFlow 是一个完全离线的开源 Android 提词器。没有账号、没有
 | --- | --- |
 | ![提词](docs/prompt-zh.png) | ![相机录制](docs/camera-zh.png) |
 
+| 隐藏预览后直接开始录制 |
+| --- |
+| ![隐藏预览](docs/camera-hidden-zh.png) |
+
 | 设置 | 数据与备份 |
 | --- | --- |
 | ![设置](docs/settings-zh.png) | ![数据与备份](docs/settings-data-zh.png) |
@@ -42,12 +46,13 @@ https://github.com/ToolsMaker292/CueFlow/releases/latest
 
 仓库内也保留了一份安装包：
 
-- `releases/CueFlow-1.0.0.apk`（正式签名，适合直接测试 / 分发）
+- `releases/CueFlow-1.0.1.apk`（最新正式签名版）
+- `releases/CueFlow-1.0.0.apk`（旧版本，保留用于回退）
 - `app/build/outputs/apk/debug/app-debug.apk`（调试签名，适合开发调试）
 - `app/build/outputs/apk/release/app-release.apk`（AGP 输出目录）
 
 ```bash
-adb install -r releases/CueFlow-1.0.0.apk
+adb install -r releases/CueFlow-1.0.1.apk
 ```
 
 也可以把 APK 传到手机后直接点击安装。系统要求 Android 7.0（API 24）或更高。

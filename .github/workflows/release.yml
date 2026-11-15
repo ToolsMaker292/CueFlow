@@ -15,29 +15,21 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Resolve APK for this tag
+        id: apk
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          apk="releases/CueFlow-${version}.apk"
+          test -f "$apk"
+          echo "path=$apk" >> "$GITHUB_OUTPUT"
+
       - name: Publish GitHub Release with APK
         uses: softprops/action-gh-release@v2
         with:
           name: CueFlow ${{ github.ref_name }}
-          body: |
-            CueFlow 1.0.0 — local-first Android teleprompter.
-
-            Downloads:
-            - `CueFlow-1.0.0.apk` (signed release, Android 7.0+)
-
-            Highlights:
-            - Material 3 UI, dynamic color, dark mode
-            - Smooth full-screen teleprompter with speed/font controls and countdown
-            - Draggable camera preview; hide it while recording and keep a red recording dot
-            - Local `.docx` import
-            - TXT export and JSON backup/restore
-            - No INTERNET permission; camera/microphone are used only while recording
-
-            SHA-256:
-            `B9EC5D71A28A8B664A6BBC361BCBB51ACE7B83CA2593D95E363A597E9C1CA77F`
-
-            This APK uses the project test signing key. Re-sign with your own key before publishing to an app store.
-          files: releases/CueFlow-1.0.0.apk
+          body_path: releases/release-notes-${{ github.ref_name }}.md
+          files: ${{ steps.apk.outputs.path }}
           fail_on_unmatched_files: true
           draft: false
           prerelease: false

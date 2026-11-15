@@ -90,6 +90,7 @@ fun CameraPreviewCard(
     audioEnabled: Boolean,
     onDrag: (Float, Float) -> Unit,
     onHide: () -> Unit,
+    startRequest: Int,
     onClose: () -> Unit,
     onRecordingChanged: (Boolean) -> Unit,
     onSaved: (Uri) -> Unit,
@@ -111,6 +112,7 @@ fun CameraPreviewCard(
     var elapsedMs by remember { mutableLongStateOf(0L) }
     var lensFacing by remember { mutableIntStateOf(CameraSelector.LENS_FACING_FRONT) }
     var cameraError by remember { mutableStateOf<String?>(null) }
+    var handledStartRequest by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(lensFacing) {
         try {
@@ -158,6 +160,7 @@ fun CameraPreviewCard(
     }
 
     fun startRecording() {
+        if (isRecording || recording != null) return
         val capture = videoCapture ?: return
         cameraError = null
         val name = "CueFlow_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.mp4"
@@ -214,6 +217,13 @@ fun CameraPreviewCard(
             }
         } catch (_: Exception) {
             cameraError = context.getString(R.string.camera_failed)
+        }
+    }
+
+    LaunchedEffect(startRequest, videoCapture) {
+        if (startRequest > handledStartRequest && !isRecording && videoCapture != null) {
+            handledStartRequest = startRequest
+            startRecording()
         }
     }
 
@@ -293,18 +303,16 @@ fun CameraPreviewCard(
                     }
                 }
                 Spacer(Modifier.weight(1f))
-                if (isRecording) {
-                    IconButton(
-                        onClick = onHide,
-                        modifier = Modifier.size(30.dp),
-                    ) {
-                        Icon(
-                            Icons.Rounded.VisibilityOff,
-                            contentDescription = stringResource(R.string.camera_hide_preview),
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
+                IconButton(
+                    onClick = onHide,
+                    modifier = Modifier.size(30.dp),
+                ) {
+                    Icon(
+                        Icons.Rounded.VisibilityOff,
+                        contentDescription = stringResource(R.string.camera_hide_preview),
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
                 IconButton(
                     onClick = onClose,
