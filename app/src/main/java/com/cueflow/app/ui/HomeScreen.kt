@@ -78,8 +78,8 @@ import com.cueflow.app.MainViewModel
 import com.cueflow.app.R
 import com.cueflow.app.data.ReadingTime
 import com.cueflow.app.data.Script
-import com.cueflow.app.data.WordImportError
-import com.cueflow.app.data.WordImportException
+import com.cueflow.app.data.DocumentImportError
+import com.cueflow.app.data.DocumentImportException
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,29 +100,30 @@ fun HomeScreen(
     var pendingDelete by remember { mutableStateOf<Script?>(null) }
     var exportTarget by remember { mutableStateOf<Script?>(null) }
 
-    val importWordLauncher = rememberLauncherForActivityResult(
+    val importDocumentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri: Uri? ->
         if (uri != null) {
             scope.launch {
-                viewModel.importWord(uri).fold(
+                viewModel.importDocument(uri).fold(
                     onSuccess = { imported ->
                         notify(
                             context.getString(
                                 if (imported.truncated) {
-                                    R.string.import_word_truncated
+                                    R.string.import_document_truncated
                                 } else {
-                                    R.string.import_word_success
+                                    R.string.import_document_success
                                 },
                                 imported.title,
                             ),
                         )
                     },
                     onFailure = { error ->
-                        val message = when ((error as? WordImportException)?.reason) {
-                            WordImportError.NO_TEXT -> R.string.import_word_no_text
-                            WordImportError.TOO_LARGE -> R.string.import_word_too_large
-                            else -> R.string.import_word_failed
+                        val message = when ((error as? DocumentImportException)?.reason) {
+                            DocumentImportError.NO_TEXT -> R.string.import_document_no_text
+                            DocumentImportError.TOO_LARGE -> R.string.import_document_too_large
+                            DocumentImportError.UNSUPPORTED -> R.string.import_document_unsupported
+                            else -> R.string.import_document_failed
                         }
                         notify(context.getString(message))
                     },
@@ -204,13 +205,13 @@ fun HomeScreen(
                     }
                     IconButton(
                         onClick = {
-                            importWordLauncher.launch(arrayOf(DOCX_MIME_TYPE))
+                            importDocumentLauncher.launch(DOCUMENT_MIME_TYPES)
                         },
-                        modifier = Modifier.testTag("home_import_word"),
+                        modifier = Modifier.testTag("home_import_document"),
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.FileOpen,
-                            contentDescription = stringResource(R.string.home_import_word),
+                            contentDescription = stringResource(R.string.home_import_document),
                         )
                     }
                     IconButton(onClick = onOpenSettings) {
@@ -637,8 +638,24 @@ private fun relativeTime(timestamp: Long): String {
     }
 }
 
-private const val DOCX_MIME_TYPE =
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+private val DOCUMENT_MIME_TYPES = arrayOf(
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/msword",
+    "application/pdf",
+    "text/plain",
+    "text/markdown",
+    "text/x-markdown",
+    "text/html",
+    "application/xhtml+xml",
+    "application/rtf",
+    "text/rtf",
+    "application/vnd.oasis.opendocument.text",
+    "application/epub+zip",
+    "text/csv",
+    "text/comma-separated-values",
+    "text/*",
+    "application/octet-stream",
+)
 
 private fun exportFileName(script: Script): String {
     val base = script.title

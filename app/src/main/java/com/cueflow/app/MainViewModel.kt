@@ -8,6 +8,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.cueflow.app.data.AppSettings
+import com.cueflow.app.data.DocumentImportError
+import com.cueflow.app.data.DocumentImportException
+import com.cueflow.app.data.DocumentImportOutcome
+import com.cueflow.app.data.DocumentImporter
 import com.cueflow.app.data.ImportReport
 import com.cueflow.app.data.ReadingTime
 import com.cueflow.app.data.Script
@@ -16,10 +20,6 @@ import com.cueflow.app.data.ScriptLimits
 import com.cueflow.app.data.ScriptRepository
 import com.cueflow.app.data.SettingsRepository
 import com.cueflow.app.data.ThemeMode
-import com.cueflow.app.data.WordImportError
-import com.cueflow.app.data.WordImportException
-import com.cueflow.app.data.WordImportOutcome
-import com.cueflow.app.data.WordImporter
 import java.io.IOException
 import java.io.InputStream
 import java.util.UUID
@@ -182,7 +182,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    suspend fun importWord(uri: Uri): Result<WordImportOutcome> = runCatching {
+    suspend fun importDocument(uri: Uri): Result<DocumentImportOutcome> = runCatching {
         withContext(Dispatchers.IO) {
             val application = getApplication<Application>()
             val resolver = application.contentResolver
@@ -206,19 +206,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
             }
-            if ((size ?: 0L) > MAX_DOCX_BYTES) {
-                throw WordImportException(WordImportError.TOO_LARGE)
+            if ((size ?: 0L) > DocumentImporter.MAX_IMPORT_BYTES) {
+                throw DocumentImportException(DocumentImportError.TOO_LARGE)
             }
 
+            val sourceName = displayName ?: uri.lastPathSegment?.substringAfterLast('/')
             val text = resolver.openInputStream(uri)?.use { stream ->
-                WordImporter.extractText(stream)
-            } ?: throw WordImportException(WordImportError.INVALID)
-            if (text.isBlank()) throw WordImportException(WordImportError.NO_TEXT)
+                DocumentImporter.extractText(stream, sourceName)
+            } ?: throw DocumentImportException(DocumentImportError.INVALID)
+            if (text.isBlank()) throw DocumentImportException(DocumentImportError.NO_TEXT)
 
             val truncated = text.length > ScriptLimits.MAX_CONTENT_LENGTH
             val content = text.take(ScriptLimits.MAX_CONTENT_LENGTH)
-            val fallbackTitle = application.getString(R.string.import_word_default_title)
-            val sourceName = displayName ?: uri.lastPathSegment?.substringAfterLast('/')
+            val fallbackTitle = application.getString(R.string.import_document_default_title)
             val title = sourceName
                 ?.substringBeforeLast('.')
                 ?.trim()
@@ -239,7 +239,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 updatedAt = now,
             )
             val saved = repository.upsert(script)
-            WordImportOutcome(
+            DocumentImportOutcome(
                 title = saved.title,
                 content = saved.content,
                 truncated = truncated,
@@ -280,8 +280,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     companion object {
-        private const val MAX_DOCX_BYTES = 20L * 1024L * 1024L
-
         fun factory(application: Application): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")

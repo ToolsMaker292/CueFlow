@@ -10,7 +10,7 @@
     <string name="home_no_results_title">没有找到脚本</string>
     <string name="home_no_results_body">换一个关键词，或者清除搜索条件。</string>
     <string name="home_new_script">新建脚本</string>
-    <string name="home_import_word">导入 Word</string>
+    <string name="home_import_document">导入文档</string>
     <string name="home_settings">设置</string>
     <string name="home_local_badge">完全离线 · 仅保存在本机</string>
     <string name="home_stats">%1$s · %2$s</string>
@@ -144,12 +144,13 @@
     <string name="export_failed">无法导出这个脚本</string>
     <string name="error_generic">出了点问题，请重试。</string>
 
-    <string name="import_word_success">已导入《%1$s》</string>
-    <string name="import_word_truncated">已导入《%1$s》，内容过长已截断</string>
-    <string name="import_word_failed">导入失败，请选择 .docx 文件。</string>
-    <string name="import_word_no_text">这个 Word 文档里没有可读取的文字。</string>
-    <string name="import_word_too_large">这个 Word 文件太大了。</string>
-    <string name="import_word_default_title">导入的 Word 文档</string>
+    <string name="import_document_success">已导入《%1$s》</string>
+    <string name="import_document_truncated">已导入《%1$s》，内容过长已截断</string>
+    <string name="import_document_failed">导入失败。支持 TXT、Word、PDF、Markdown、HTML、RTF、ODT、EPUB、CSV。</string>
+    <string name="import_document_no_text">没有读取到文字。扫描版 PDF 需要 OCR；旧版 DOC 建议另存为 DOCX 或 TXT。</string>
+    <string name="import_document_too_large">这个文档太大了。</string>
+    <string name="import_document_unsupported">不支持这种格式。支持：DOCX、DOC、PDF、TXT、MD、HTML、RTF、ODT、EPUB、CSV。</string>
+    <string name="import_document_default_title">导入的文档</string>
 
     <string name="loading">加载中……</string>
     <string name="copy_suffix">（副本）</string>

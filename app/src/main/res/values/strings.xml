@@ -10,7 +10,7 @@
     <string name="home_no_results_title">No matching scripts</string>
     <string name="home_no_results_body">Try a different word, or clear the search.</string>
     <string name="home_new_script">New script</string>
-    <string name="home_import_word">Import Word</string>
+    <string name="home_import_document">Import document</string>
     <string name="home_settings">Settings</string>
     <string name="home_local_badge">Fully offline · saved on this device</string>
     <string name="home_stats">%1$s · %2$s</string>
@@ -149,12 +149,13 @@
     <string name="export_failed">Could not export this script</string>
     <string name="error_generic">Something went wrong. Please try again.</string>
 
-    <string name="import_word_success">Imported “%1$s”</string>
-    <string name="import_word_truncated">Imported “%1$s” — content was truncated</string>
-    <string name="import_word_failed">Could not import. Choose a .docx file.</string>
-    <string name="import_word_no_text">No readable text found in this Word document.</string>
-    <string name="import_word_too_large">This Word file is too large.</string>
-    <string name="import_word_default_title">Imported Word document</string>
+    <string name="import_document_success">Imported “%1$s”</string>
+    <string name="import_document_truncated">Imported “%1$s” — content was truncated</string>
+    <string name="import_document_failed">Could not import. Try TXT, Word, PDF, Markdown, HTML, RTF, ODT, EPUB or CSV.</string>
+    <string name="import_document_no_text">No readable text found. Scanned PDFs need OCR; old DOC files may need re-saving as DOCX or TXT.</string>
+    <string name="import_document_too_large">This document is too large.</string>
+    <string name="import_document_unsupported">Unsupported format. Supported: DOCX, DOC, PDF, TXT, MD, HTML, RTF, ODT, EPUB, CSV.</string>
+    <string name="import_document_default_title">Imported document</string>
 
     <string name="loading">Loading…</string>
     <string name="copy_suffix"> (copy)</string>

@@ -16,7 +16,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class WordImportInstrumentedTest {
+class DocumentImportInstrumentedTest {
     private fun makeDocx(): ByteArray {
         val xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
             <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -43,12 +43,32 @@ class WordImportInstrumentedTest {
         val file = File(application.cacheDir, "WordImportTest.docx")
         file.writeBytes(makeDocx())
         try {
-            val result = viewModel.importWord(Uri.fromFile(file))
+            val result = viewModel.importDocument(Uri.fromFile(file))
             assertTrue(result.isSuccess)
             val outcome = result.getOrThrow()
             assertEquals("WordImportTest", outcome.title)
             assertTrue(outcome.content.contains("第一段来自 Word。"))
             assertTrue(viewModel.scripts.value.any { it.title == "WordImportTest" })
+        } finally {
+            file.delete()
+        }
+    }
+
+    @Test
+    fun importsPlainTextAsANewScript() = runBlocking {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val viewModel = MainViewModel(application)
+        viewModel.loading.first { !it }
+
+        val file = File(application.cacheDir, "PlainImportTest.txt")
+        file.writeText("TXT 导入测试。\n第二行内容。")
+        try {
+            val result = viewModel.importDocument(Uri.fromFile(file))
+            assertTrue(result.isSuccess)
+            val outcome = result.getOrThrow()
+            assertEquals("PlainImportTest", outcome.title)
+            assertTrue(outcome.content.contains("TXT 导入测试。"))
+            assertTrue(viewModel.scripts.value.any { it.title == "PlainImportTest" })
         } finally {
             file.delete()
         }
