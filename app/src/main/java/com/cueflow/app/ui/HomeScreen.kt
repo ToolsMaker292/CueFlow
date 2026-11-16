@@ -38,6 +38,7 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -99,35 +100,43 @@ fun HomeScreen(
     var query by rememberSaveable { mutableStateOf("") }
     var pendingDelete by remember { mutableStateOf<Script?>(null) }
     var exportTarget by remember { mutableStateOf<Script?>(null) }
+    var importBusy by remember { mutableStateOf(false) }
 
     val importDocumentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri: Uri? ->
         if (uri != null) {
+            importBusy = true
             scope.launch {
-                viewModel.importDocument(uri).fold(
-                    onSuccess = { imported ->
-                        notify(
-                            context.getString(
-                                if (imported.truncated) {
-                                    R.string.import_document_truncated
-                                } else {
-                                    R.string.import_document_success
-                                },
-                                imported.title,
-                            ),
-                        )
-                    },
-                    onFailure = { error ->
-                        val message = when ((error as? DocumentImportException)?.reason) {
-                            DocumentImportError.NO_TEXT -> R.string.import_document_no_text
-                            DocumentImportError.TOO_LARGE -> R.string.import_document_too_large
-                            DocumentImportError.UNSUPPORTED -> R.string.import_document_unsupported
-                            else -> R.string.import_document_failed
-                        }
-                        notify(context.getString(message))
-                    },
-                )
+                try {
+                    viewModel.importDocument(uri).fold(
+                        onSuccess = { imported ->
+                            notify(
+                                context.getString(
+                                    if (imported.truncated) {
+                                        R.string.import_document_truncated
+                                    } else {
+                                        R.string.import_document_success
+                                    },
+                                    imported.title,
+                                ),
+                            )
+                        },
+                        onFailure = { error ->
+                            val message = when ((error as? DocumentImportException)?.reason) {
+                                DocumentImportError.NO_TEXT -> R.string.import_document_no_text
+                                DocumentImportError.TOO_LARGE -> R.string.import_document_too_large
+                                DocumentImportError.UNSUPPORTED ->
+                                    R.string.import_document_unsupported
+                                DocumentImportError.OCR_FAILED -> R.string.import_document_ocr_failed
+                                else -> R.string.import_document_failed
+                            }
+                            notify(context.getString(message))
+                        },
+                    )
+                } finally {
+                    importBusy = false
+                }
             }
         }
     }
@@ -354,6 +363,23 @@ fun HomeScreen(
                     Text(stringResource(R.string.action_cancel))
                 }
             },
+        )
+    }
+
+    if (importBusy) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(R.string.import_ocr_busy_title)) },
+            text = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    Text(stringResource(R.string.import_ocr_busy_body))
+                }
+            },
+            confirmButton = {},
         )
     }
 }
@@ -654,6 +680,7 @@ private val DOCUMENT_MIME_TYPES = arrayOf(
     "text/csv",
     "text/comma-separated-values",
     "text/*",
+    "image/*",
     "application/octet-stream",
 )
 

@@ -10,20 +10,22 @@ CueFlow 是一个完全离线的开源 Android 提词器。没有账号、没有
 - **流畅全屏提词**：逐帧滚动，速度 10–120 dp/s 实时可调；字号 24–64 sp；行高 1.5 倍；横向 / 纵向镜像；阅读辅助线；进度条。
 - **为拍摄而设计**：3 / 5 秒倒计时、屏幕常亮、沉浸式全屏、控制栏自动隐藏、轻触唤回。
 - **本地相机录制**：提词时打开前置/后置摄像头小窗，边看提词边录制带声音的 MP4；预览窗可拖动，未开始录制时也能隐藏，隐藏后仍可用红点按钮直接开始录制；录制中隐藏则只保留顶部小红点提示，录制不中断。
-- **导入文档**：支持 `.docx`、`.doc`、`.pdf`、`.txt`、`.md` / `.markdown`、`.html` / `.htm` / `.xhtml`、`.rtf`、`.odt`、`.epub`、`.csv`，在本地提取文字并生成新脚本。普通文字型 PDF 可直接导入；扫描版 PDF 仍需 OCR。
+- **导入文档**：支持 `.docx`、`.doc`、`.pdf`、`.txt`、`.md` / `.markdown`、`.html` / `.htm` / `.xhtml`、`.rtf`、`.odt`、`.epub`、`.csv`，在本地提取文字并生成新脚本。
+- **离线 OCR（PP-OCRv6 small）**：支持 `.png`、`.jpg` / `.jpeg`、`.webp`、`.bmp` 图片；文字型 PDF 优先直接提取，扫描版 PDF 自动逐页 OCR。检测 + 识别模型约 34 MB，纯本地 TensorFlow Lite CPU 推理，不上传图片、不联网。
 - **录制文件**：Android 10+ 直接保存到相册 `Movies/CueFlow`（不申请存储权限）；Android 7–9 保存到应用文件并可一键分享到相册/网盘/剪辑软件。
 - **本地脚本库**：新建、编辑、搜索、复制、删除；输入后 800ms 自动保存，按返回键也会保存。
 - **可靠的数据层**：UTF-8 JSON + `AtomicFile` 原子写入；写入失败自动回退；损坏文件会保留为 `scripts-corrupt-*.json` 而不是被悄悄删除。
 - **迁移与备份**：单篇导出 `.txt`；全部脚本导出为 JSON；恢复时按 ID 和时间戳合并，不会用旧备份覆盖新编辑。
 - **隐私优先**：Manifest 中没有 `INTERNET` 权限，没有第三方分析或广告依赖，关闭系统云备份；相机/麦克风权限只用于本地录制。
-- **低内存**：Android 11 模拟器实测 Release 包 PSS 约 **36 MB**（Debug 约 104 MB）；2 GB 内存的模拟器可正常运行，4 GB 手机有充足余量。
+- **低内存**：提词本身仍是轻量 UI；OCR 模型仅在导入图片/扫描件时按需加载并在完成后释放。Android 11 模拟器实测普通提词 Release PSS 约 **36 MB**，8 GB 手机运行 OCR 也有充足余量。
 
 ## 支持导入的格式
 
 | 类别 | 扩展名 | 说明 |
 | --- | --- | --- |
 | Word | `.docx`、`.doc` | DOC 支持常见 Word 97–2003 复合文档；加密文件请先解密 |
-| PDF | `.pdf` | 文字型 PDF；扫描版需要 OCR |
+| PDF | `.pdf` | 文字型优先直接提取；扫描版自动 OCR |
+| 图片 | `.png`、`.jpg` / `.jpeg`、`.webp`、`.bmp` | PP-OCRv6 small 离线 OCR，支持中英日等 50 种语言 |
 | 纯文本 | `.txt`、`.md`、`.markdown`、`.csv` | UTF-8 / UTF-16 / GB18030 自动识别 |
 | 网页 | `.html`、`.htm`、`.xhtml` | 自动去除标签，保留段落 |
 | 富文本 | `.rtf` | 提取正文，忽略字体/颜色等控制字 |
@@ -60,13 +62,13 @@ https://github.com/ToolsMaker292/CueFlow/releases/latest
 
 仓库内也保留了一份安装包：
 
-- `releases/CueFlow-1.0.2.apk`（最新正式签名版）
-- `releases/CueFlow-1.0.1.apk`、`releases/CueFlow-1.0.0.apk`（旧版本，保留用于回退）
+- `releases/CueFlow-1.1.0.apk`（最新正式签名版，含离线 OCR）
+- `releases/CueFlow-1.0.2.apk`、`CueFlow-1.0.1.apk`、`CueFlow-1.0.0.apk`（旧版本，保留用于回退）
 - `app/build/outputs/apk/debug/app-debug.apk`（调试签名，适合开发调试）
 - `app/build/outputs/apk/release/app-release.apk`（AGP 输出目录）
 
 ```bash
-adb install -r releases/CueFlow-1.0.2.apk
+adb install -r releases/CueFlow-1.1.0.apk
 ```
 
 也可以把 APK 传到手机后直接点击安装。系统要求 Android 7.0（API 24）或更高。
@@ -147,7 +149,8 @@ app/src/main/java/com/cueflow/app/
 │   ├── DocumentImporter.kt      # TXT/MD/HTML/RTF/ODT/EPUB/CSV + 格式分派
 │   ├── WordImporter.kt          # 本地 .docx 段落提取（SAX + ZIP）
 │   ├── DocTextExtractor.kt      # 旧版 .doc 的 OLE2 复合文档/片段表提取
-│   └── PdfTextExtractor.kt      # 本地 PDF 文本流与 ToUnicode 映射
+│   ├── PdfTextExtractor.kt      # 本地 PDF 文本流与 ToUnicode 映射
+│   └── ocr/                     # PP-OCRv6 small TFLite 推理、图片/PDF OCR
 └── ui/
     ├── CueFlowApp.kt            # Navigation Compose 路由
     ├── HomeScreen.kt            # 脚本库 / 搜索 / 菜单
@@ -171,7 +174,7 @@ app/src/main/java/com/cueflow/app/
 
 本项目在 Android 11（API 30，x86_64）模拟器上完成：
 
-- 29 个 JVM 单元测试通过（含 10 种文档格式、GB18030 文本、PDF Flate 流、OLE2 DOC、恶意 XML/空文档解析）；6 个设备端测试通过（UI 冒烟、原子持久化、损坏恢复、备份合并、DOCX 导入、TXT 导入）。
+- 29 个 JVM 单元测试通过（含 10 种文档格式、GB18030 文本、PDF Flate 流、OLE2 DOC、恶意 XML/空文档解析）；7 个设备端测试通过（UI 冒烟、原子持久化、损坏恢复、备份合并、DOCX/TXT 导入、PP-OCRv6 small 实际识别）。
 - `lintDebug` **0 errors / 0 warnings**（含 CameraX 录音权限检查）。
 - Debug / Release APK 安装与启动；R8 正式包序列化读写正常。
 - 新建 → 自动保存 → 返回首页 → 全屏提词；倒计时、自动滚动、控制栏自动隐藏。

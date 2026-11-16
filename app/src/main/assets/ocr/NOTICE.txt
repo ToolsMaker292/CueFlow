@@ -1,0 +1,15 @@
+﻿PP-OCRv6 Small OCR models
+=======================
+
+Source: https://huggingface.co/litert-community/PP-OCRv6-Small-LiteRT
+Base models: PaddlePaddle/PP-OCRv6_small_det_safetensors
+             PaddlePaddle/PP-OCRv6_small_rec_safetensors
+License: Apache License 2.0
+Runtime: TensorFlow Lite (Apache License 2.0)
+Preprocessing: PaddlePaddle/Hugging Face Apache-2.0; resize helper PyTorch BSD-3-Clause.
+
+Files:
+- det.tflite (12,380,664 bytes, SHA-256 ec9430b6e592ffb28e83b6bab539262a30d267d2475c136b193926ad83835768)
+- rec.tflite (21,477,068 bytes, SHA-256 904c9a589763123d8a4c01d205c78669cfe3723b2a23b2221bdeb26fccc66a5d)
+- characters.json (168,510 bytes, SHA-256 9c89db8aa95ad30c83ee305d53d366c6bba3f85ff2eab0375ef345fd50b0674a)
+

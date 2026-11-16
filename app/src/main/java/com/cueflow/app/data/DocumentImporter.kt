@@ -31,7 +31,19 @@ object DocumentImporter {
     val supportedExtensions: List<String> = listOf(
         "docx", "doc", "pdf", "txt", "text", "md", "markdown",
         "html", "htm", "xhtml", "rtf", "odt", "epub", "csv",
+        "png", "jpg", "jpeg", "webp", "bmp",
     )
+
+    fun isImageName(fileName: String?): Boolean {
+        val extension = fileName
+            ?.substringAfterLast('.', "")
+            ?.lowercase(Locale.US)
+            .orEmpty()
+        return extension in setOf("png", "jpg", "jpeg", "webp", "bmp")
+    }
+
+    fun isPdfName(fileName: String?): Boolean =
+        fileName?.substringAfterLast('.', "")?.equals("pdf", ignoreCase = true) == true
 
     fun extractText(input: InputStream, fileName: String?): String {
         val bytes = readLimited(BufferedInputStream(input), MAX_IMPORT_BYTES)
@@ -365,7 +377,7 @@ enum class DocumentFormat {
     DOCX, DOC, PDF, TXT, MARKDOWN, HTML, RTF, ODT, EPUB, CSV, UNKNOWN
 }
 
-enum class DocumentImportError { INVALID, NO_TEXT, TOO_LARGE, UNSUPPORTED }
+enum class DocumentImportError { INVALID, NO_TEXT, TOO_LARGE, UNSUPPORTED, OCR_FAILED }
 
 class DocumentImportException(val reason: DocumentImportError) : Exception(reason.name)
 

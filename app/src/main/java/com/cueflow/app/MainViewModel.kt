@@ -20,6 +20,8 @@ import com.cueflow.app.data.ScriptLimits
 import com.cueflow.app.data.ScriptRepository
 import com.cueflow.app.data.SettingsRepository
 import com.cueflow.app.data.ThemeMode
+import com.cueflow.app.data.ocr.OcrException
+import com.cueflow.app.data.ocr.OcrImporter
 import java.io.IOException
 import java.io.InputStream
 import java.util.UUID
@@ -211,9 +213,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             val sourceName = displayName ?: uri.lastPathSegment?.substringAfterLast('/')
-            val text = resolver.openInputStream(uri)?.use { stream ->
-                DocumentImporter.extractText(stream, sourceName)
-            } ?: throw DocumentImportException(DocumentImportError.INVALID)
+            val isImage = DocumentImporter.isImageName(sourceName)
+            val isPdf = DocumentImporter.isPdfName(sourceName)
+            val text = try {
+                if (isImage) {
+                    OcrImporter.recognizeImage(application, uri)
+                } else {
+                    try {
+                        resolver.openInputStream(uri)?.use { stream ->
+                            DocumentImporter.extractText(stream, sourceName)
+                        } ?: throw DocumentImportException(DocumentImportError.INVALID)
+                    } catch (error: DocumentImportException) {
+                        if (isPdf && error.reason == DocumentImportError.NO_TEXT) {
+                            OcrImporter.recognizePdf(application, uri)
+                        } else {
+                            throw error
+                        }
+                    }
+                }
+            } catch (error: OcrException) {
+                throw DocumentImportException(DocumentImportError.OCR_FAILED)
+            }
             if (text.isBlank()) throw DocumentImportException(DocumentImportError.NO_TEXT)
 
             val truncated = text.length > ScriptLimits.MAX_CONTENT_LENGTH
