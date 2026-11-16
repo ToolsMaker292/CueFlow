@@ -10,8 +10,8 @@ CueFlow 是一个完全离线的开源 Android 提词器。没有账号、没有
 - **流畅全屏提词**：逐帧滚动，速度 10–120 dp/s 实时可调；字号 24–64 sp；行高 1.5 倍；横向 / 纵向镜像；阅读辅助线；进度条。
 - **为拍摄而设计**：3 / 5 秒倒计时、屏幕常亮、沉浸式全屏、控制栏自动隐藏、轻触唤回。
 - **本地相机录制**：提词时打开前置/后置摄像头小窗，边看提词边录制带声音的 MP4；预览窗可拖动，未开始录制时也能隐藏，隐藏后仍可用红点按钮直接开始录制；录制中隐藏则只保留顶部小红点提示，录制不中断。
-- **导入文档**：支持 `.docx`、`.doc`、`.pdf`、`.txt`、`.md` / `.markdown`、`.html` / `.htm` / `.xhtml`、`.rtf`、`.odt`、`.epub`、`.csv`，在本地提取文字并生成新脚本。
-- **离线 OCR（PP-OCRv6 small）**：支持 `.png`、`.jpg` / `.jpeg`、`.webp`、`.bmp` 图片；文字型 PDF 优先直接提取，扫描版 PDF 自动逐页 OCR。检测 + 识别模型约 34 MB，纯本地 TensorFlow Lite CPU 推理，不上传图片、不联网。
+- **导入文档**：支持 `.docx`、`.doc`、`.pdf`、`.txt`、`.md` / `.markdown`、`.html` / `.htm` / `.xhtml`、`.rtf`、`.odt`、`.epub`、`.csv`，在本地提取文字并生成一条新脚本。
+- **离线 OCR（PP-OCRv6 small）**：支持 `.png`、`.jpg` / `.jpeg`、`.webp`、`.bmp` 图片；扫描版 PDF 没有文字层时自动逐页 OCR。检测 + 识别模型约 34 MB，纯本地 TensorFlow Lite CPU 推理，不上传图片、不联网。
 - **录制文件**：Android 10+ 直接保存到相册 `Movies/CueFlow`（不申请存储权限）；Android 7–9 保存到应用文件并可一键分享到相册/网盘/剪辑软件。
 - **本地脚本库**：新建、编辑、搜索、复制、删除；输入后 800ms 自动保存，按返回键也会保存。
 - **可靠的数据层**：UTF-8 JSON + `AtomicFile` 原子写入；写入失败自动回退；损坏文件会保留为 `scripts-corrupt-*.json` 而不是被悄悄删除。
@@ -32,7 +32,7 @@ CueFlow 是一个完全离线的开源 Android 提词器。没有账号、没有
 | 办公文档 | `.odt` | 读取 OpenDocument 正文 |
 | 电子书 | `.epub` | 合并章节 XHTML 文本 |
 
-所有解析都在设备本地完成，不上传原文件，不需要网络权限。
+所有解析和 OCR 都在设备本地完成，不上传原文件，不需要网络权限。
 
 ## 截图
 
@@ -43,10 +43,6 @@ CueFlow 是一个完全离线的开源 Android 提词器。没有账号、没有
 | 全屏提词 | 提词 + 录制 |
 | --- | --- |
 | ![提词](docs/prompt-zh.png) | ![相机录制](docs/camera-zh.png) |
-
-| 隐藏预览后直接开始录制 |
-| --- |
-| ![隐藏预览](docs/camera-hidden-zh.png) |
 
 | 设置 | 数据与备份 |
 | --- | --- |
@@ -60,15 +56,15 @@ CueFlow 是一个完全离线的开源 Android 提词器。没有账号、没有
 
 https://github.com/ToolsMaker292/CueFlow/releases/latest
 
-仓库内也保留了一份安装包：
+仓库内也保留安装包：
 
-- `releases/CueFlow-1.1.0.apk`（最新正式签名版，含离线 OCR）
-- `releases/CueFlow-1.0.2.apk`、`CueFlow-1.0.1.apk`、`CueFlow-1.0.0.apk`（旧版本，保留用于回退）
+- `releases/CueFlow-1.1.1.apk`（最新正式签名版，含离线 OCR 修复）
+- `releases/CueFlow-1.1.0.apk`、`CueFlow-1.0.2.apk`、`CueFlow-1.0.1.apk`、`CueFlow-1.0.0.apk`（旧版本，保留用于回退）
 - `app/build/outputs/apk/debug/app-debug.apk`（调试签名，适合开发调试）
 - `app/build/outputs/apk/release/app-release.apk`（AGP 输出目录）
 
 ```bash
-adb install -r releases/CueFlow-1.1.0.apk
+adb install -r releases/CueFlow-1.1.1.apk
 ```
 
 也可以把 APK 传到手机后直接点击安装。系统要求 Android 7.0（API 24）或更高。
@@ -131,7 +127,7 @@ keyPassword=***
 - 备份是明文的 JSON / TXT 文件，由你选择保存位置；请自行注意敏感内容。
 - 应用不申请网络权限，因此不存在“偷偷上传”的可能。
 - 相机/麦克风权限只在点击录制按钮时请求；录制文件不会离开设备，除非你自己点击分享。
-- 导入的 Word、PDF、Markdown、HTML、RTF、ODT、EPUB 等文档只在本地读取，解析结果写入本机脚本库，不会上传。
+- 导入的 Word 文件只在本地读取，解析结果写入本机脚本库，不会上传。
 - 详见 [PRIVACY.md](PRIVACY.md)。
 
 ## 工程结构
@@ -156,6 +152,7 @@ app/src/main/java/com/cueflow/app/
     ├── HomeScreen.kt            # 脚本库 / 搜索 / 菜单
     ├── EditorScreen.kt          # 编辑与自动保存
     ├── PromptScreen.kt          # 全屏提词、倒计时、镜像
+    ├── CameraPreviewCard.kt     # 可拖动/隐藏的本地相机录制小窗
     ├── SettingsScreen.kt        # 设置、备份、关于
     └── theme/                   # Material 3 色彩、字体、形状
 ```
@@ -174,7 +171,7 @@ app/src/main/java/com/cueflow/app/
 
 本项目在 Android 11（API 30，x86_64）模拟器上完成：
 
-- 29 个 JVM 单元测试通过（含 10 种文档格式、GB18030 文本、PDF Flate 流、OLE2 DOC、恶意 XML/空文档解析）；7 个设备端测试通过（UI 冒烟、原子持久化、损坏恢复、备份合并、DOCX/TXT 导入、PP-OCRv6 small 实际识别）。
+- 29 个 JVM 单元测试通过（含 10 种文档格式、GB18030 文本、PDF Flate 流、OLE2 DOC、恶意 XML/空文档解析）；9 个设备端测试通过（UI 冒烟、原子持久化、损坏恢复、备份合并、DOCX/TXT 导入、3 项 PP-OCRv6 small 实际识别）。
 - `lintDebug` **0 errors / 0 warnings**（含 CameraX 录音权限检查）。
 - Debug / Release APK 安装与启动；R8 正式包序列化读写正常。
 - 新建 → 自动保存 → 返回首页 → 全屏提词；倒计时、自动滚动、控制栏自动隐藏。
@@ -187,7 +184,7 @@ app/src/main/java/com/cueflow/app/
 
 - 最低 Android 7.0（API 24）。
 - 已在 Android 11（API 30）上运行验证；工程同时配置了 Android 15（API 35）的 AVD，可在正常硬件加速的机器上使用。
-- 一份 APK 同时包含 `arm64-v8a`、`armeabi-v7a`、`x86`、`x86_64`，覆盖常见 ARM 手机和模拟器。
+- 没有原生 ABI 依赖，不区分 ARM / x86；一份 APK 覆盖所有常见手机。
 - 建议 2 GB 以上内存；4 GB 手机完全足够。
 
 ## 参与贡献

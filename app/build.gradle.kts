@@ -22,8 +22,8 @@ android {
         applicationId = "com.cueflow.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.1.0"
+        versionCode = 5
+        versionName = "1.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -119,6 +119,7 @@ dependencies {
 
     // PP-OCRv6 small runs on-device through the standard TFLite CPU runtime.
     implementation(libs.tensorflow.lite)
+    implementation(libs.androidx.exifinterface)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

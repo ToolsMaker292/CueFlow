@@ -4,8 +4,11 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Matrix
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
+import androidx.exifinterface.media.ExifInterface
+import java.io.File
 import kotlin.math.max
 import kotlin.math.min
 
@@ -16,29 +19,106 @@ object OcrImporter {
     private const val PDF_RENDER_MAX_SIDE = 2_200
 
     fun recognizeImage(context: Context, uri: Uri): String {
-        val resolver = context.contentResolver
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
-            ?: throw OcrException("Cannot open image")
-        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
-            throw OcrException("Cannot decode image")
-        }
-        var sampleSize = 1
-        while (max(bounds.outWidth, bounds.outHeight) / sampleSize > MAX_IMAGE_SIDE) {
-            sampleSize *= 2
-        }
-        val options = BitmapFactory.Options().apply {
-            inSampleSize = sampleSize
-            inPreferredConfig = Bitmap.Config.ARGB_8888
-        }
-        val bitmap = resolver.openInputStream(uri)?.use {
-            BitmapFactory.decodeStream(it, null, options)
-        } ?: throw OcrException("Cannot decode image")
-        return try {
-            OcrEngine.recognize(context, bitmap)
+        // Copy once. Some content providers allow only one open stream, and EXIF
+        // needs a seekable file for reliable orientation handling.
+        val temporary = File.createTempFile("cueflow-ocr-", ".img", context.cacheDir)
+        try {
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                temporary.outputStream().use { output -> input.copyTo(output) }
+            } ?: throw OcrException("Cannot open image")
+            if (temporary.length() == 0L) throw OcrException("Cannot decode image")
+
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(temporary.absolutePath, bounds)
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+                throw OcrException("Cannot decode image")
+            }
+            var sampleSize = 1
+            while (max(bounds.outWidth, bounds.outHeight) / sampleSize > MAX_IMAGE_SIDE) {
+                sampleSize *= 2
+            }
+            val options = BitmapFactory.Options().apply {
+                inSampleSize = sampleSize
+                inPreferredConfig = Bitmap.Config.ARGB_8888
+            }
+            val decoded = BitmapFactory.decodeFile(temporary.absolutePath, options)
+                ?: throw OcrException("Cannot decode image")
+            val oriented = applyExifOrientation(temporary, decoded)
+            var result: String? = null
+            try {
+                result = runCatching { OcrEngine.recognize(context, oriented) }.getOrNull()
+                if (result.isNullOrBlank()) {
+                    // EXIF is missing or wrong on some camera providers. Retry the
+                    // other cardinal rotations before giving up.
+                    for (angle in intArrayOf(90, 180, 270)) {
+                        val rotated = rotate(oriented, angle)
+                        try {
+                            val candidate = runCatching {
+                                OcrEngine.recognize(context, rotated)
+                            }.getOrNull()
+                            if (!candidate.isNullOrBlank()) {
+                                result = candidate
+                                break
+                            }
+                        } finally {
+                            if (rotated !== oriented) rotated.recycle()
+                        }
+                    }
+                }
+            } finally {
+                if (oriented !== decoded) oriented.recycle()
+                decoded.recycle()
+            }
+            return result
+                ?.takeIf { it.isNotBlank() }
+                ?: throw OcrException("No readable text found")
         } finally {
-            bitmap.recycle()
+            temporary.delete()
         }
+    }
+
+    private fun applyExifOrientation(file: File, bitmap: Bitmap): Bitmap {
+        val orientation = runCatching {
+            ExifInterface(file).getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL,
+            )
+        }.getOrDefault(ExifInterface.ORIENTATION_NORMAL)
+        val matrix = Matrix()
+        when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
+            ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
+            ExifInterface.ORIENTATION_TRANSPOSE -> {
+                matrix.postRotate(90f)
+                matrix.postScale(-1f, 1f)
+            }
+            ExifInterface.ORIENTATION_TRANSVERSE -> {
+                matrix.postRotate(270f)
+                matrix.postScale(-1f, 1f)
+            }
+            else -> return bitmap
+        }
+        return runCatching {
+            val oriented = Bitmap.createBitmap(
+                bitmap,
+                0,
+                0,
+                bitmap.width,
+                bitmap.height,
+                matrix,
+                true,
+            )
+            if (oriented !== bitmap) bitmap.recycle()
+            oriented
+        }.getOrDefault(bitmap)
+    }
+
+    private fun rotate(bitmap: Bitmap, degrees: Int): Bitmap {
+        val matrix = Matrix().apply { postRotate(degrees.toFloat()) }
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
     fun recognizePdf(context: Context, uri: Uri): String {
