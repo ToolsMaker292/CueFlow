@@ -22,8 +22,8 @@ android {
         applicationId = "com.cueflow.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.1.2"
+        versionCode = 7
+        versionName = "1.1.2 SP2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -120,6 +120,12 @@ dependencies {
     // PP-OCRv6 small runs on-device through the standard TFLite CPU runtime.
     implementation(libs.tensorflow.lite)
     implementation(libs.androidx.exifinterface)
+    // Direct text extraction for normal PDFs; OCR is only the fallback.
+    // BouncyCastle is only used by PDFBox for signatures/encryption; this app
+    // never handles encrypted PDFs and drops it to keep the APK small.
+    implementation(libs.pdfbox.android) {
+        exclude(group = "org.bouncycastle")
+    }
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

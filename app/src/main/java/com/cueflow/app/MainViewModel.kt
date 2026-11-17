@@ -13,6 +13,7 @@ import com.cueflow.app.data.DocumentImportException
 import com.cueflow.app.data.DocumentImportOutcome
 import com.cueflow.app.data.DocumentImporter
 import com.cueflow.app.data.ImportReport
+import com.cueflow.app.data.PdfBoxTextExtractor
 import com.cueflow.app.data.ReadingTime
 import com.cueflow.app.data.Script
 import com.cueflow.app.data.ScriptCodec
@@ -216,20 +217,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val isImage = DocumentImporter.isImageName(sourceName)
             val isPdf = DocumentImporter.isPdfName(sourceName)
             val text = try {
-                if (isImage) {
-                    OcrImporter.recognizeImage(application, uri)
-                } else {
-                    try {
-                        resolver.openInputStream(uri)?.use { stream ->
-                            DocumentImporter.extractText(stream, sourceName)
-                        } ?: throw DocumentImportException(DocumentImportError.INVALID)
-                    } catch (error: DocumentImportException) {
-                        if (isPdf && error.reason == DocumentImportError.NO_TEXT) {
-                            OcrImporter.recognizePdf(application, uri)
+                when {
+                    isPdf -> {
+                        // Text PDFs must never enter OCR: the OCR fallback can
+                        // garble layout and is much more expensive. Use the real
+                        // text layer first, and only OCR when it is absent.
+                        val direct = resolver.openInputStream(uri)?.use { stream ->
+                            PdfBoxTextExtractor.extract(application, stream)
+                        }
+                        if (!direct.isNullOrBlank()) {
+                            direct
                         } else {
-                            throw error
+                            OcrImporter.recognizePdf(application, uri)
                         }
                     }
+                    isImage -> OcrImporter.recognizeImage(application, uri)
+                    else -> resolver.openInputStream(uri)?.use { stream ->
+                        DocumentImporter.extractText(stream, sourceName)
+                    } ?: throw DocumentImportException(DocumentImportError.INVALID)
                 }
             } catch (error: OcrException) {
                 throw DocumentImportException(DocumentImportError.OCR_FAILED)

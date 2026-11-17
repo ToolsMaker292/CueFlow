@@ -4,6 +4,11 @@ import android.app.Application
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.pdmodel.PDPage
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream
+import com.tom_roush.pdfbox.pdmodel.font.PDType1Font
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.zip.ZipEntry
@@ -51,6 +56,41 @@ class DocumentImportInstrumentedTest {
             assertTrue(viewModel.scripts.value.any { it.title == "WordImportTest" })
         } finally {
             file.delete()
+        }
+    }
+
+    @Test
+    fun importsTextPdfWithoutOcr() = runBlocking {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        PDFBoxResourceLoader.init(application)
+        val document = PDDocument()
+        try {
+            val page = PDPage()
+            document.addPage(page)
+            PDPageContentStream(document, page).use { content ->
+                content.beginText()
+                content.setFont(PDType1Font.HELVETICA, 18f)
+                content.newLineAtOffset(72f, 700f)
+                content.showText("DIRECT PDF TEXT")
+                content.endText()
+            }
+            val output = ByteArrayOutputStream()
+            document.save(output)
+            val file = File(application.cacheDir, "PdfDirectTest.pdf")
+            file.writeBytes(output.toByteArray())
+            try {
+                val viewModel = MainViewModel(application)
+                viewModel.loading.first { !it }
+                val result = viewModel.importDocument(Uri.fromFile(file))
+                assertTrue(result.isSuccess)
+                val outcome = result.getOrThrow()
+                assertEquals("PdfDirectTest", outcome.title)
+                assertTrue(outcome.content.contains("DIRECT PDF TEXT"))
+            } finally {
+                file.delete()
+            }
+        } finally {
+            document.close()
         }
     }
 

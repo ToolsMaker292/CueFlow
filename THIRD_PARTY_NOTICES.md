@@ -8,6 +8,7 @@ CueFlow 以 Apache License 2.0 发布。主要运行时依赖：
 | Jetpack Compose（UI / Material 3 / Foundation） | Apache License 2.0 |
 | AndroidX CameraX（camera-core / camera2 / lifecycle / video / view） | Apache License 2.0 |
 | AndroidX ExifInterface | Apache License 2.0 |
+| PDFBox-Android | Apache License 2.0 |
 | Kotlin / kotlinx.coroutines / kotlinx.serialization | Apache License 2.0 |
 | Google Material Icons | Apache License 2.0 |
 | TensorFlow Lite 2.16.1 | Apache License 2.0 |

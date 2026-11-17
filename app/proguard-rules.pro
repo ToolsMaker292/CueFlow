@@ -18,3 +18,9 @@
 
 # Compose keeps required runtime metadata automatically.
 -dontwarn org.jetbrains.annotations.**
+
+# PDFBox's optional JPEG2000 decoder is not needed for text extraction.
+-dontwarn com.gemalto.jp2.**
+
+# PDFBox optional BouncyCastle signing/encryption support is excluded.
+-dontwarn org.bouncycastle.**
