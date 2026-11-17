@@ -35,6 +35,7 @@ object OcrEngine {
     private const val MIN_BOX_WIDTH = 8
     private const val MIN_BOX_HEIGHT = 5
     private const val MAX_REGION_TEXT = 200_000
+    private const val MAX_REGIONS = 48
 
     private const val DET_BYTES = 12_380_664L
     private const val REC_BYTES = 21_477_068L
@@ -62,6 +63,8 @@ object OcrEngine {
                 DET_SIZE * DET_SIZE,
             )
             val regions = detectRegions(heatmap)
+                .sortedWith(compareBy({ it.top }, { it.left }))
+                .take(MAX_REGIONS)
                 .ifEmpty { fallbackWholeImage(bitmap) }
             if (regions.isEmpty()) throw OcrException("No text region detected")
 

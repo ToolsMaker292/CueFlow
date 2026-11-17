@@ -48,6 +48,7 @@ private object Routes {
     const val EDITOR = "editor?scriptId={scriptId}"
     const val PROMPT = "prompt/{scriptId}"
     const val SETTINGS = "settings"
+    const val PHOTO_OCR = "photo_ocr"
 
     fun editor(scriptId: String?): String =
         if (scriptId == null) "editor" else "editor?scriptId=$scriptId"
@@ -103,6 +104,7 @@ fun CueFlowApp(viewModel: MainViewModel) {
                     onEditScript = { id -> navController.navigate(Routes.editor(id)) },
                     onPlayScript = { id -> navController.navigate(Routes.prompt(id)) },
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                    onOpenPhotoOcr = { navController.navigate(Routes.PHOTO_OCR) },
                     notify = notify,
                 )
             }
@@ -143,6 +145,17 @@ fun CueFlowApp(viewModel: MainViewModel) {
                         onClose = { navController.popBackStack() },
                     )
                 }
+            }
+
+            composable(Routes.PHOTO_OCR) {
+                PhotoOcrScreen(
+                    viewModel = viewModel,
+                    onClose = { navController.popBackStack() },
+                    onImported = { title ->
+                        notify(context.getString(R.string.import_document_success, title))
+                        navController.popBackStack()
+                    },
+                )
             }
 
             composable(Routes.SETTINGS) {

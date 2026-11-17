@@ -159,6 +159,18 @@
     <string name="import_document_ocr_failed">Offline OCR could not read this image. Try a clearer scan or a text PDF.</string>
     <string name="import_ocr_busy_title">Reading locally</string>
     <string name="import_ocr_busy_body">Running offline OCR. Large scans may take a while.</string>
+    <string name="home_photo_ocr">Take a photo to OCR</string>
+    <string name="photo_ocr_title">Photo OCR</string>
+    <string name="photo_ocr_hint">Put the text inside the frame, with even lighting.</string>
+    <string name="photo_ocr_capture_description">Tap to capture and recognize</string>
+    <string name="photo_ocr_close">Close</string>
+    <string name="photo_ocr_switch">Switch camera</string>
+    <string name="photo_ocr_camera_failed">Camera could not start. Try again.</string>
+    <string name="photo_ocr_capture_failed">Photo capture failed. Try again.</string>
+    <string name="photo_ocr_import_failed">Could not create a script from this photo.</string>
+    <string name="photo_ocr_no_text">No readable text in this photo. Adjust lighting or framing.</string>
+    <string name="photo_ocr_permission_title">Camera permission</string>
+    <string name="photo_ocr_permission_body">Camera access is needed to take a photo for OCR. You can grant it in system settings.</string>
 
     <string name="loading">Loading…</string>
     <string name="copy_suffix"> (copy)</string>

@@ -1,5 +1,7 @@
 package com.cueflow.app.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,6 +34,7 @@ import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.FileOpen
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
@@ -44,6 +47,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -71,6 +75,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.ContextCompat
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -91,6 +96,7 @@ fun HomeScreen(
     onEditScript: (String) -> Unit,
     onPlayScript: (String) -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenPhotoOcr: () -> Unit,
     notify: (String) -> Unit,
 ) {
     val context = LocalContext.current
@@ -101,6 +107,16 @@ fun HomeScreen(
     var pendingDelete by remember { mutableStateOf<Script?>(null) }
     var exportTarget by remember { mutableStateOf<Script?>(null) }
     var importBusy by remember { mutableStateOf(false) }
+
+    val photoPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            onOpenPhotoOcr()
+        } else {
+            notify(context.getString(R.string.photo_ocr_permission_body))
+        }
+    }
 
     val importDocumentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -248,6 +264,33 @@ fun HomeScreen(
                     scriptCountLabel = scriptCountLabel,
                     characterCountLabel = characterCountLabel,
                 )
+            }
+
+            item(key = "photo_ocr") {
+                FilledTonalButton(
+                    onClick = {
+                        if (ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.CAMERA,
+                            ) == PackageManager.PERMISSION_GRANTED
+                        ) {
+                            onOpenPhotoOcr()
+                        } else {
+                            photoPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp)
+                        .testTag("home_photo_ocr"),
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.PhotoCamera,
+                        contentDescription = null,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.home_photo_ocr))
+                }
             }
 
             item(key = "search") {

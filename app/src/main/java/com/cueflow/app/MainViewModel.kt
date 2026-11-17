@@ -240,6 +240,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val content = text.take(ScriptLimits.MAX_CONTENT_LENGTH)
             val fallbackTitle = application.getString(R.string.import_document_default_title)
             val title = sourceName
+                ?.takeUnless { it.startsWith("ocr-photo-") }
                 ?.substringBeforeLast('.')
                 ?.trim()
                 .orEmpty()

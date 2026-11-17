@@ -154,6 +154,18 @@
     <string name="import_document_ocr_failed">离线 OCR 未能识别这张图片，请换一张更清晰的扫描图或文字版 PDF。</string>
     <string name="import_ocr_busy_title">正在本地识别</string>
     <string name="import_ocr_busy_body">正在运行离线 OCR，较大的扫描件可能需要一会儿。</string>
+    <string name="home_photo_ocr">拍照识别</string>
+    <string name="photo_ocr_title">拍照识别</string>
+    <string name="photo_ocr_hint">把要识别的文字放进框内，保持光线均匀。</string>
+    <string name="photo_ocr_capture_description">点击拍摄并识别</string>
+    <string name="photo_ocr_close">关闭</string>
+    <string name="photo_ocr_switch">切换摄像头</string>
+    <string name="photo_ocr_camera_failed">相机启动失败，请重试。</string>
+    <string name="photo_ocr_capture_failed">拍照失败，请重试。</string>
+    <string name="photo_ocr_import_failed">无法从这张照片生成脚本。</string>
+    <string name="photo_ocr_no_text">没有识别到文字，请调整光线或取景范围。</string>
+    <string name="photo_ocr_permission_title">相机权限</string>
+    <string name="photo_ocr_permission_body">拍照识别需要相机权限，可以在系统设置中开启。</string>
 
     <string name="loading">加载中……</string>
     <string name="copy_suffix">（副本）</string>

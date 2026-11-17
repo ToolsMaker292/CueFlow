@@ -1,5 +1,13 @@
 # 更新日志
 
+## 1.1.2
+
+- 新增独立的【拍照识别】入口：从首页打开相机预览，拍照后直接进入现有离线 OCR 流程。
+- 复用同一个 CameraX provider / CameraRuntime，拍照与录像共用相机栈；绑定时主动解绑旧 session，退出时只释放自己的 session，避免抢相机。
+- 拍照输出 JPEG 后按同一套 `MainViewModel.importDocument` → `OcrImporter` → `PP-OCRv6 small` 流程处理，和图片导入共用 OCR 逻辑。
+- 拍照图片继续读取 EXIF 方向，并保留 90°/180°/270° 自动重试。
+- 保留 1.1.1 及更早版本的 APK 和 Release。
+
 ## 1.1.1
 
 - 修复部分相册图片 OCR 提示“离线 OCR 未能识别这张图片”的问题：

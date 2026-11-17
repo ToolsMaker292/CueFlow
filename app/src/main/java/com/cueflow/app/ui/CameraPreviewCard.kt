@@ -75,14 +75,12 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.cueflow.app.R
+import com.cueflow.app.ui.camera.CameraRuntime
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 @Composable
 fun CameraPreviewCard(
@@ -104,6 +102,7 @@ fun CameraPreviewCard(
         }
     }
     val previewDescription = stringResource(R.string.camera_preview)
+    val cameraOwner = remember { Any() }
 
     var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
     var videoCapture by remember { mutableStateOf<VideoCapture<Recorder>?>(null) }
@@ -116,9 +115,9 @@ fun CameraPreviewCard(
 
     LaunchedEffect(lensFacing) {
         try {
-            val provider = context.cameraProvider()
+            val provider = CameraRuntime.provider(context)
             cameraProvider = provider
-            val selector = provider.selectCamera(lensFacing)
+            val selector = CameraRuntime.selectCamera(provider, lensFacing)
             val preview = Preview.Builder().build().also {
                 it.surfaceProvider = previewView.surfaceProvider
             }
@@ -131,8 +130,14 @@ fun CameraPreviewCard(
                 )
                 .build()
             val capture = VideoCapture.withOutput(recorder)
-            provider.unbindAll()
-            provider.bindToLifecycle(lifecycleOwner, selector, preview, capture)
+            CameraRuntime.bind(
+                cameraOwner,
+                provider,
+                lifecycleOwner,
+                selector,
+                preview,
+                capture,
+            )
             videoCapture = capture
             cameraError = null
         } catch (_: Exception) {
@@ -143,7 +148,9 @@ fun CameraPreviewCard(
     DisposableEffect(Unit) {
         onDispose {
             runCatching { recording?.close() }
-            runCatching { cameraProvider?.unbindAll() }
+            cameraProvider?.let { provider ->
+                CameraRuntime.release(cameraOwner, provider)
+            }
         }
     }
 
@@ -414,34 +421,6 @@ fun CameraPreviewCard(
 }
 
 private val RecordingRed = Color(0xFFE53935)
-
-private suspend fun Context.cameraProvider(): ProcessCameraProvider =
-    suspendCancellableCoroutine { continuation ->
-        val future = ProcessCameraProvider.getInstance(this)
-        future.addListener(
-            {
-                try {
-                    continuation.resume(future.get())
-                } catch (error: Throwable) {
-                    continuation.resumeWithException(error)
-                }
-            },
-            ContextCompat.getMainExecutor(this),
-        )
-        continuation.invokeOnCancellation { future.cancel(false) }
-    }
-
-private fun ProcessCameraProvider.selectCamera(requested: Int): CameraSelector {
-    val front = CameraSelector.DEFAULT_FRONT_CAMERA
-    val back = CameraSelector.DEFAULT_BACK_CAMERA
-    return when {
-        requested == CameraSelector.LENS_FACING_FRONT && hasCamera(front) -> front
-        requested == CameraSelector.LENS_FACING_BACK && hasCamera(back) -> back
-        hasCamera(back) -> back
-        hasCamera(front) -> front
-        else -> throw IllegalStateException("No camera")
-    }
-}
 
 private fun formatElapsed(elapsedMs: Long): String {
     val totalSeconds = elapsedMs / 1_000L

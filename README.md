@@ -12,6 +12,7 @@ CueFlow 是一个完全离线的开源 Android 提词器。没有账号、没有
 - **本地相机录制**：提词时打开前置/后置摄像头小窗，边看提词边录制带声音的 MP4；预览窗可拖动，未开始录制时也能隐藏，隐藏后仍可用红点按钮直接开始录制；录制中隐藏则只保留顶部小红点提示，录制不中断。
 - **导入文档**：支持 `.docx`、`.doc`、`.pdf`、`.txt`、`.md` / `.markdown`、`.html` / `.htm` / `.xhtml`、`.rtf`、`.odt`、`.epub`、`.csv`，在本地提取文字并生成一条新脚本。
 - **离线 OCR（PP-OCRv6 small）**：支持 `.png`、`.jpg` / `.jpeg`、`.webp`、`.bmp` 图片；扫描版 PDF 没有文字层时自动逐页 OCR。检测 + 识别模型约 34 MB，纯本地 TensorFlow Lite CPU 推理，不上传图片、不联网。
+- **拍照识别**：首页新增【拍照识别】入口，打开复用 CameraX 的相机预览，拍照后直接走同一套离线 OCR，自动处理 EXIF 方向；拍照与视频录制不会同时抢占相机。
 - **录制文件**：Android 10+ 直接保存到相册 `Movies/CueFlow`（不申请存储权限）；Android 7–9 保存到应用文件并可一键分享到相册/网盘/剪辑软件。
 - **本地脚本库**：新建、编辑、搜索、复制、删除；输入后 800ms 自动保存，按返回键也会保存。
 - **可靠的数据层**：UTF-8 JSON + `AtomicFile` 原子写入；写入失败自动回退；损坏文件会保留为 `scripts-corrupt-*.json` 而不是被悄悄删除。
@@ -44,6 +45,10 @@ CueFlow 是一个完全离线的开源 Android 提词器。没有账号、没有
 | --- | --- |
 | ![提词](docs/prompt-zh.png) | ![相机录制](docs/camera-zh.png) |
 
+| 拍照识别 |
+| --- |
+| ![拍照识别](docs/photo-ocr-zh.png) |
+
 | 设置 | 数据与备份 |
 | --- | --- |
 | ![设置](docs/settings-zh.png) | ![数据与备份](docs/settings-data-zh.png) |
@@ -58,13 +63,13 @@ https://github.com/ToolsMaker292/CueFlow/releases/latest
 
 仓库内也保留安装包：
 
-- `releases/CueFlow-1.1.1.apk`（最新正式签名版，含离线 OCR 修复）
-- `releases/CueFlow-1.1.0.apk`、`CueFlow-1.0.2.apk`、`CueFlow-1.0.1.apk`、`CueFlow-1.0.0.apk`（旧版本，保留用于回退）
+- `releases/CueFlow-1.1.2.apk`（最新正式签名版，含拍照识别）
+- `releases/CueFlow-1.1.1.apk`、`CueFlow-1.1.0.apk`、`CueFlow-1.0.2.apk`、`CueFlow-1.0.1.apk`、`CueFlow-1.0.0.apk`（旧版本，保留用于回退）
 - `app/build/outputs/apk/debug/app-debug.apk`（调试签名，适合开发调试）
 - `app/build/outputs/apk/release/app-release.apk`（AGP 输出目录）
 
 ```bash
-adb install -r releases/CueFlow-1.1.1.apk
+adb install -r releases/CueFlow-1.1.2.apk
 ```
 
 也可以把 APK 传到手机后直接点击安装。系统要求 Android 7.0（API 24）或更高。
@@ -153,6 +158,8 @@ app/src/main/java/com/cueflow/app/
     ├── EditorScreen.kt          # 编辑与自动保存
     ├── PromptScreen.kt          # 全屏提词、倒计时、镜像
     ├── CameraPreviewCard.kt     # 可拖动/隐藏的本地相机录制小窗
+    ├── PhotoOcrScreen.kt        # 独立拍照识别入口
+    ├── camera/CameraRuntime.kt  # 拍照/录像共用 CameraX provider 与会话
     ├── SettingsScreen.kt        # 设置、备份、关于
     └── theme/                   # Material 3 色彩、字体、形状
 ```
@@ -171,7 +178,7 @@ app/src/main/java/com/cueflow/app/
 
 本项目在 Android 11（API 30，x86_64）模拟器上完成：
 
-- 29 个 JVM 单元测试通过（含 10 种文档格式、GB18030 文本、PDF Flate 流、OLE2 DOC、恶意 XML/空文档解析）；9 个设备端测试通过（UI 冒烟、原子持久化、损坏恢复、备份合并、DOCX/TXT 导入、3 项 PP-OCRv6 small 实际识别）。
+- 29 个 JVM 单元测试通过（含 10 种文档格式、GB18030 文本、PDF Flate 流、OLE2 DOC、恶意 XML/空文档解析）；9 个设备端测试通过（UI 冒烟、原子持久化、损坏恢复、备份合并、DOCX/TXT 导入、3 项 PP-OCRv6 small 实际识别）；【拍照识别】入口、CameraX 预览、拍照→OCR→生成脚本已在 Android 11 模拟器实际验证。
 - `lintDebug` **0 errors / 0 warnings**（含 CameraX 录音权限检查）。
 - Debug / Release APK 安装与启动；R8 正式包序列化读写正常。
 - 新建 → 自动保存 → 返回首页 → 全屏提词；倒计时、自动滚动、控制栏自动隐藏。
